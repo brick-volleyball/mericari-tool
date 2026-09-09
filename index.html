@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8F%B7%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<title>メルカリ出品キット</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#F4F6F8;
+  --surface:#FFFFFF;
+  --surface-2:#ECEFF3;
+  --text:#1B2430;
+  --text-dim:#5B6675;
+  --border:#DCE1E8;
+  --accent:#E15A26;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#FBE2D4;
+  --teal:#1E6E76;
+  --teal-soft:#DCEEF0;
+  --danger:#C43B3B;
+  --danger-soft:#F7DEDE;
+  --shadow:0 1px 2px rgba(20,25,35,.06),0 8px 24px rgba(20,25,35,.07);
+  --radius:14px;
+  --radius-sm:9px;
+  --font-display:'Zen Maru Gothic','Noto Sans JP',sans-serif;
+  --font-body:'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;
+  --font-mono:ui-monospace,'SFMono-Regular',Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12161C;--surface:#1A2027;--surface-2:#212932;--text:#E8ECF2;--text-dim:#9AA6B3;
+    --border:#2C343F;--accent:#FF8C57;--accent-ink:#1A0D06;--accent-soft:#3A2517;
+    --teal:#5FC2CB;--teal-soft:#1A3438;--danger:#FF8A8A;--danger-soft:#3A1E1E;
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12161C;--surface:#1A2027;--surface-2:#212932;--text:#E8ECF2;--text-dim:#9AA6B3;
+  --border:#2C343F;--accent:#FF8C57;--accent-ink:#1A0D06;--accent-soft:#3A2517;
+  --teal:#5FC2CB;--teal-soft:#1A3438;--danger:#FF8A8A;--danger-soft:#3A1E1E;
+  --shadow:0 1px 2px rgba(0,0,0,.35),0 10px 30px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);margin:0;line-height:1.6;}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;margin:0 0 4px;text-wrap:balance;}
+h1{font-size:1.5rem;}
+h2{font-size:1.2rem;}
+h3{font-size:1.02rem;margin-bottom:10px;}
+p{margin:0;}
+code{font-family:var(--font-mono);background:var(--surface-2);padding:.1em .4em;border-radius:5px;font-size:.9em;}
+button{font-family:inherit;}
+a{color:var(--teal);}
+@media (prefers-reduced-motion:no-preference){
+  .btn,.nav-btn,.template-card,.filmstrip-item{transition:transform .12s ease,background .15s ease,border-color .15s ease,box-shadow .15s ease;}
+}
+
+.app-shell{display:grid;grid-template-columns:236px 1fr;min-height:100vh;}
+.side-nav{background:var(--surface);border-right:1px solid var(--border);padding:18px 14px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 6px 16px;}
+.brand-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(155deg,var(--accent),#C6431A);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:900;font-size:.85rem;flex:none;}
+.brand-text{display:flex;flex-direction:column;line-height:1.25;}
+.brand-text strong{font-family:var(--font-display);font-size:1rem;}
+.brand-text span{font-size:.72rem;color:var(--text-dim);}
+.nav-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);border:1px solid transparent;background:transparent;color:var(--text-dim);font-size:.92rem;font-weight:600;cursor:pointer;text-align:left;}
+.nav-btn svg{flex:none;width:18px;height:18px;stroke:currentColor;}
+.nav-btn:hover{background:var(--surface-2);color:var(--text);}
+.nav-btn.active{background:var(--accent-soft);color:var(--accent);}
+.nav-footer{margin-top:auto;padding:10px 6px 0;}
+.badge{display:inline-block;font-size:.7rem;padding:4px 9px;border-radius:999px;background:var(--surface-2);color:var(--text-dim);border:1px solid var(--border);}
+.badge.ok{background:var(--teal-soft);color:var(--teal);border-color:transparent;}
+
+.content{padding:26px 28px 60px;max-width:1040px;width:100%;margin:0 auto;}
+.panel{display:flex;flex-direction:column;gap:18px;}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;}
+.lead{color:var(--text-dim);font-size:.92rem;margin-top:4px;max-width:52ch;}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.88rem;font-weight:600;cursor:pointer;}
+.btn:hover{border-color:var(--text-dim);}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.btn-accent{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);}
+.btn-accent:hover{filter:brightness(1.05);}
+.btn-ghost{background:transparent;border-color:var(--border);}
+.btn-danger-ghost{background:transparent;border-color:var(--danger);color:var(--danger);}
+.btn-sm{padding:6px 12px;font-size:.8rem;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);}
+.empty-hint{color:var(--text-dim);font-size:.88rem;padding:18px;border:1px dashed var(--border);border-radius:var(--radius);text-align:center;}
+
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.field-label{font-size:.82rem;font-weight:600;color:var(--text-dim);}
+.field label{font-size:.82rem;font-weight:600;color:var(--text-dim);}
+.field-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 16px;}
+input[type=text],input[type=number],select,textarea,input[type=file]{
+  font-family:var(--font-body);font-size:.92rem;padding:9px 11px;border-radius:var(--radius-sm);
+  border:1px solid var(--border);background:var(--surface);color:var(--text);width:100%;
+}
+textarea{resize:vertical;font-family:var(--font-body);}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
+.hint{font-size:.8rem;color:var(--text-dim);margin-top:2px;}
+
+.template-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;}
+.template-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:8px;}
+.template-card h3{margin:0;font-size:1rem;}
+.template-card .tpl-meta{font-size:.78rem;color:var(--text-dim);display:flex;flex-wrap:wrap;gap:6px;}
+.chip{background:var(--surface-2);border-radius:999px;padding:2px 9px;font-size:.72rem;}
+.chip.sample{background:var(--teal-soft);color:var(--teal);}
+.tpl-title-preview{font-size:.84rem;color:var(--text);background:var(--surface-2);padding:8px 10px;border-radius:var(--radius-sm);font-family:var(--font-mono);word-break:break-word;}
+.template-card .row{display:flex;gap:8px;margin-top:auto;}
+
+.editor-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);}
+.editor-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.variable-rows{display:flex;flex-direction:column;gap:10px;margin-bottom:10px;}
+.variable-row{display:grid;grid-template-columns:1fr 1fr .8fr 1.4fr auto;gap:8px;align-items:end;background:var(--surface-2);padding:10px;border-radius:var(--radius-sm);}
+.variable-row .field{margin-bottom:0;}
+.variable-row .vrow-remove{align-self:center;}
+@media (max-width:820px){.variable-row{grid-template-columns:1fr 1fr;}}
+.editor-actions{display:flex;align-items:center;gap:10px;margin-top:18px;flex-wrap:wrap;}
+.spacer{flex:1;}
+
+.create-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:start;}
+@media (max-width:860px){.create-grid{grid-template-columns:1fr;}}
+.variable-form{display:flex;flex-direction:column;gap:12px;margin-top:14px;}
+.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:step;}
+.steps li{display:flex;gap:10px;font-size:.88rem;align-items:flex-start;}
+.steps li::before{counter-increment:step;content:counter(step);flex:none;width:22px;height:22px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:.74rem;display:flex;align-items:center;justify-content:center;}
+
+.output-grid{display:grid;grid-template-columns:1fr;gap:14px;}
+.output-card{display:flex;flex-direction:column;gap:8px;}
+.output-head{display:flex;justify-content:space-between;align-items:center;}
+.output-text{font-size:.92rem;background:var(--surface-2);border-radius:var(--radius-sm);padding:12px;min-height:2.4em;white-space:pre-wrap;word-break:break-word;font-family:var(--font-mono);}
+.fixed-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:0;}
+.fixed-list div{background:var(--surface-2);border-radius:var(--radius-sm);padding:8px 10px;}
+.fixed-list dt{font-size:.72rem;color:var(--text-dim);}
+.fixed-list dd{margin:2px 0 0;font-size:.88rem;font-weight:600;}
+
+.history-list{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:8px;}
+.history-list li{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--surface-2);padding:9px 12px;border-radius:var(--radius-sm);font-size:.85rem;}
+.history-list .hl-main{overflow:hidden;}
+.history-list .hl-title{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.history-list .hl-meta{font-size:.72rem;color:var(--text-dim);}
+.history-list .hl-actions{display:flex;gap:6px;flex:none;}
+
+.filmstrip{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;}
+.filmstrip-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px;display:flex;flex-direction:column;gap:6px;box-shadow:var(--shadow);}
+.filmstrip-item canvas{width:100%;aspect-ratio:1/1;border-radius:7px;background:var(--surface-2);display:block;}
+.filmstrip-item .fi-idx{font-size:.72rem;color:var(--text-dim);font-weight:700;}
+.filmstrip-item .fi-actions{display:flex;gap:4px;flex-wrap:wrap;}
+.filmstrip-item .fi-actions .btn{padding:4px 8px;font-size:.72rem;}
+
+.crop-editor{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;align-items:flex-start;}
+.crop-editor-head{display:flex;justify-content:space-between;align-items:center;width:100%;}
+#cropCanvas{max-width:100%;width:320px;aspect-ratio:1/1;border-radius:10px;background:var(--surface-2);cursor:grab;touch-action:none;}
+#cropCanvas:active{cursor:grabbing;}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:.85rem;box-shadow:var(--shadow);z-index:50;}
+
+@media (max-width:760px){
+  .app-shell{grid-template-columns:1fr;}
+  .side-nav{position:sticky;height:auto;flex-direction:row;overflow-x:auto;padding:10px 12px;gap:4px;border-right:none;border-bottom:1px solid var(--border);}
+  .brand{display:none;}
+  .nav-footer{display:none;}
+  .nav-btn{flex:none;white-space:nowrap;}
+  .content{padding:18px 14px 60px;}
+}
+</style>
+</head>
+<body>
+
+
+<div class="app-shell">
+  <nav class="side-nav" id="sideNav">
+    <div class="brand">
+      <div class="brand-mark">MK</div>
+      <div class="brand-text"><strong>メルカリ出品キット</strong><span>テンプレート×写真書き出し</span></div>
+    </div>
+    <button class="nav-btn active" data-tab="templates" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="4" rx="1"/><rect x="4" y="10" width="16" height="4" rx="1"/><rect x="4" y="16" width="16" height="4" rx="1"/></svg>
+      テンプレート
+    </button>
+    <button class="nav-btn" data-tab="create" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      出品作成
+    </button>
+    <button class="nav-btn" data-tab="images" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></svg>
+      画像編集
+    </button>
+    <div class="nav-footer"><span id="storageBadge" class="badge">保存先を確認中…</span></div>
+  </nav>
+
+  <main class="content">
+    <section id="panel-templates" class="panel">
+      <div class="panel-head">
+        <div>
+          <h1>テンプレート管理</h1>
+          <p class="lead">よく出品する商品のパターンを登録しておくと、次回からの入力が数項目だけで済みます。</p>
+        </div>
+        <button id="btnNewTemplate" class="btn btn-accent" type="button">＋ 新規テンプレート</button>
+      </div>
+
+      <div id="templateListView">
+        <div id="templateGrid" class="template-grid"></div>
+        <p id="templateEmpty" class="empty-hint" hidden>まだテンプレートがありません。「＋ 新規テンプレート」から作成してください。</p>
+      </div>
+
+      <div id="templateEditView" class="editor-card" hidden>
+        <div class="editor-head">
+          <button id="btnBackToList" class="btn btn-ghost btn-sm" type="button">← 一覧に戻る</button>
+          <h2 id="editorTitle">新規テンプレート</h2>
+        </div>
+        <form id="templateForm">
+          <div class="field">
+            <label for="f_name">テンプレート名</label>
+            <input type="text" id="f_name" required placeholder="例：六角ベース（PETG）">
+          </div>
+
+          <div class="field-grid">
+            <div class="field"><label for="f_category">カテゴリー（メモ）</label><input type="text" id="f_category" placeholder="例：ホビー・楽器・アート＞おもちゃ＞フィギュア"></div>
+            <div class="field"><label for="f_condition">商品の状態</label><select id="f_condition"></select></div>
+            <div class="field"><label for="f_shippingPayer">配送料の負担</label><select id="f_shippingPayer"></select></div>
+            <div class="field"><label for="f_shippingMethod">配送の方法</label><select id="f_shippingMethod"></select></div>
+            <div class="field"><label for="f_shippingFrom">発送元の地域</label><select id="f_shippingFrom"></select></div>
+            <div class="field"><label for="f_shippingDays">発送までの日数</label><select id="f_shippingDays"></select></div>
+          </div>
+
+          <div class="field">
+            <label for="f_title">タイトルひな形</label>
+            <input type="text" id="f_title" placeholder="例：【3Dプリント】ベアブリック 六角ベース {size} {color}">
+          </div>
+          <div class="field">
+            <label for="f_desc">商品説明ひな形</label>
+            <textarea id="f_desc" rows="8" placeholder="例：ハンドメイドの六角形ディスプレイベースです。"></textarea>
+          </div>
+          <p class="hint">ヒント：下の「可変項目」で作ったキーを <code>{price}</code> のように波かっこで囲むと、出品作成タブで入力した値に自動で差し替わります。</p>
+
+          <div class="field">
+            <label>可変項目（商品ごとに変わる項目）</label>
+            <div id="variableRows" class="variable-rows"></div>
+            <button type="button" id="btnAddVariable" class="btn btn-ghost btn-sm">＋ 項目を追加</button>
+          </div>
+
+          <div class="editor-actions">
+            <button type="button" id="btnDeleteTemplate" class="btn btn-danger-ghost btn-sm" hidden>このテンプレートを削除</button>
+            <div class="spacer"></div>
+            <button type="button" id="btnCancelTemplate" class="btn btn-ghost">キャンセル</button>
+            <button type="submit" class="btn btn-accent">保存する</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section id="panel-create" class="panel" hidden>
+      <div class="panel-head">
+        <div>
+          <h1>出品作成</h1>
+          <p class="lead">テンプレートを選んで、変わる項目だけ入力すればタイトルと説明文が自動でできます。</p>
+        </div>
+      </div>
+
+      <div class="create-grid">
+        <div class="card">
+          <label class="field-label" for="createTemplateSelect">テンプレート</label>
+          <select id="createTemplateSelect" style="margin-top:6px;"></select>
+          <div id="createVariableForm" class="variable-form"></div>
+        </div>
+        <div class="card">
+          <h3>ステップガイド</h3>
+          <ol class="steps" id="stepGuide">
+            <li>画像編集タブで写真をトリミングし、ZIPで書き出す</li>
+            <li>メルカリアプリで「出品する」→ 書き出した画像を選択</li>
+            <li>下の「タイトル」をコピーして貼り付け</li>
+            <li>下の「商品説明」をコピーして貼り付け</li>
+            <li>カテゴリー・商品の状態・配送方法を「固定情報」に合わせて選択</li>
+            <li>価格を入力して出品する</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="output-grid">
+        <div class="card output-card">
+          <div class="output-head"><h3>タイトル</h3><button class="btn btn-sm" data-copy="outTitle" type="button">コピー</button></div>
+          <div id="outTitle" class="output-text"></div>
+        </div>
+        <div class="card output-card">
+          <div class="output-head"><h3>商品説明</h3><button class="btn btn-sm" data-copy="outDesc" type="button">コピー</button></div>
+          <div id="outDesc" class="output-text"></div>
+        </div>
+        <div class="card output-card">
+          <div class="output-head"><h3>固定情報（選択の参考に）</h3></div>
+          <dl id="outFixed" class="fixed-list"></dl>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="output-head"><h3>出品履歴</h3><button id="btnSaveHistory" class="btn btn-accent btn-sm" type="button">この内容を履歴に保存</button></div>
+        <ul id="historyList" class="history-list"></ul>
+        <p id="historyEmpty" class="empty-hint" hidden>まだ履歴はありません。</p>
+      </div>
+    </section>
+
+    <section id="panel-images" class="panel" hidden>
+      <div class="panel-head">
+        <div>
+          <h1>画像編集</h1>
+          <p class="lead">写真を正方形に切り抜いて、順番どおりの連番ファイルとしてまとめてダウンロードします。</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <label class="field-label" for="imgInput">写真を追加</label>
+        <input type="file" id="imgInput" accept="image/*" multiple style="margin-top:6px;">
+        <p class="hint">複数選択できます。あとから順番の入れ替え・削除・トリミング位置の調整も可能です。</p>
+      </div>
+
+      <div id="filmstrip" class="filmstrip"></div>
+      <p id="imagesEmpty" class="empty-hint">まだ写真がありません。</p>
+
+      <div id="cropEditor" class="crop-editor" hidden>
+        <div class="crop-editor-head"><h3 style="margin:0;">トリミング調整</h3><button id="btnCloseCrop" class="btn btn-ghost btn-sm" type="button">完了</button></div>
+        <canvas id="cropCanvas" width="320" height="320"></canvas>
+        <div style="width:100%;max-width:320px;">
+          <label class="field-label" for="zoomRange">拡大</label>
+          <input type="range" id="zoomRange" min="1" max="3" step="0.02" value="1" style="width:100%;">
+        </div>
+        <p class="hint">写真をドラッグすると位置を調整できます。</p>
+      </div>
+
+      <div class="card">
+        <h3>まとめて書き出し</h3>
+        <div class="field-grid">
+          <div class="field"><label for="exportPrefix">ファイル名の接頭辞</label><input type="text" id="exportPrefix" placeholder="例：hexbase"></div>
+          <div class="field"><label for="exportSize">出力サイズ</label>
+            <select id="exportSize">
+              <option value="1000">1000×1000px</option>
+              <option value="1200" selected>1200×1200px</option>
+              <option value="1600">1600×1600px</option>
+            </select>
+          </div>
+          <div class="field"><label for="exportFormat">形式</label>
+            <select id="exportFormat"><option value="jpeg" selected>JPEG</option><option value="png">PNG</option></select>
+          </div>
+        </div>
+        <button id="btnExportZip" class="btn btn-accent" type="button">ZIPでダウンロード（<span id="exportCount">0</span>枚）</button>
+        <p id="exportStatus" class="hint"></p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ---------- constants ---------- */
+var CONDITIONS = ["新品、未使用","未使用に近い","目立った傷や汚れなし","やや傷や汚れあり","傷や汚れあり","全体的に状態が悪い"];
+var SHIPPING_PAYERS = ["送料込み（出品者負担）","着払い（購入者負担）"];
+var SHIPPING_METHODS = ["らくらくメルカリ便","ゆうゆうメルカリ便","普通郵便（定形・定形外）","ゆうパケットポスト","その他"];
+var SHIPPING_DAYS = ["1~2日で発送","2~3日で発送","4~7日で発送"];
+var PREFECTURES = ["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
+
+var LS_T = "mercariKit_templates_v1";
+var LS_H = "mercariKit_history_v1";
+
+/* ---------- helpers ---------- */
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function escapeHtml(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+function loadLocal(key, fallback){ try{ var raw = localStorage.getItem(key); return raw? JSON.parse(raw) : fallback; }catch(e){ return fallback; } }
+function saveLocal(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+function toast(msg){
+  var el = document.getElementById("toast");
+  el.textContent = msg; el.hidden = false;
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function(){ el.hidden = true; }, 2400);
+}
+function fillSelect(sel, options, selected){
+  sel.innerHTML = options.map(function(o){ return '<option value="'+escapeHtml(o)+'"'+(o===selected?" selected":"")+'>'+escapeHtml(o)+"</option>"; }).join("");
+}
+function slugify(str){
+  var s = String(str||"").trim().replace(/[\\\/:*?"<>|]+/g,"").replace(/\s+/g,"_");
+  s = s.replace(/[^\w\-一-龯ぁ-んァ-ヶー]+/g,"");
+  return s.slice(0,24) || "photo";
+}
+
+/* ---------- seed data ---------- */
+function seedTemplates(){
+  return [
+    {
+      id: uid(), isSample: true,
+      name: "六角ベース（PETG）",
+      category: "ホビー・楽器・アート＞おもちゃ＞フィギュア",
+      condition: "新品、未使用",
+      shippingPayer: "送料込み（出品者負担）",
+      shippingMethod: "ゆうゆうメルカリ便",
+      shippingFrom: "滋賀県",
+      shippingDays: "1~2日で発送",
+      titleTemplate: "【3Dプリント】ベアブリック 六角ベース {size} {color}",
+      descriptionTemplate: "ハンドメイドの六角形ディスプレイベースです。\n\n■対応サイズ：ベアブリック{size}\n■カラー：{color}\n■素材：PETG（3Dプリント）\n\n1点ずつ丁寧に印刷・仕上げをしています。飾り方の一例は写真をご参照ください。\n\n価格：{price}\n\n#ベアブリック #BEARBRICK #3Dプリント #ディスプレイベース",
+      variables: [
+        {key:"color", label:"カラー", type:"select", options:["ブラック","ホワイト","クリア"], unit:"", def:"ブラック"},
+        {key:"size", label:"サイズ", type:"select", options:["100%用","400%用"], unit:"", def:"100%用"},
+        {key:"price", label:"価格", type:"number", options:[], unit:"円", def:"1200"}
+      ],
+      updatedAt: Date.now()
+    },
+    {
+      id: uid(), isSample: true,
+      name: "壁掛けフレーム",
+      category: "ホビー・楽器・アート＞おもちゃ＞フィギュア",
+      condition: "新品、未使用",
+      shippingPayer: "送料込み（出品者負担）",
+      shippingMethod: "ゆうゆうメルカリ便",
+      shippingFrom: "滋賀県",
+      shippingDays: "2~3日で発送",
+      titleTemplate: "【3Dプリント】ベアブリック 壁掛けフレーム {slots}体収納 {color}",
+      descriptionTemplate: "壁に掛けて飾れる、ベアブリック用の壁掛けフレームです。\n\n■収納数：{slots}体\n■カラー：{color}\n■素材：PETG（3Dプリント）\n■壁掛け用の穴あり\n\n価格：{price}\n\n#ベアブリック #BEARBRICK #3Dプリント #壁掛け #ディスプレイフレーム",
+      variables: [
+        {key:"slots", label:"収納数", type:"select", options:["1","3","5"], unit:"", def:"3"},
+        {key:"color", label:"カラー", type:"select", options:["ブラック","ホワイト"], unit:"", def:"ブラック"},
+        {key:"price", label:"価格", type:"number", options:[], unit:"円", def:"1800"}
+      ],
+      updatedAt: Date.now()
+    }
+  ];
+}
+
+/* ---------- state ---------- */
+var templates = loadLocal(LS_T, null);
+var isFirstRun = templates === null;
+if (isFirstRun) templates = seedTemplates();
+var history = loadLocal(LS_H, []);
+var db = null;
+var downloadsNS = null;
+var editingId = null; // template currently being edited, null = new
+var images = []; // {id, img, name, zoom, panXFrac, panYFrac}
+var activeCropId = null;
+var dragState = null;
+
+/* ---------- capabilities ---------- */
+(function initCapabilities(){
+  if(!(window.claude && window.claude.use)){ setStorageBadge(false); return; }
+  window.claude.use("downloads").then(function(ns){ downloadsNS = ns; }).catch(function(){});
+  window.claude.use("db").then(function(ns){
+    db = ns;
+    if(!db){ setStorageBadge(false); return; }
+    setStorageBadge(true);
+    db.collection("templates").get().then(function(snap){
+      if(snap.docs.length){
+        templates = snap.docs.map(function(d){ return d.data(); });
+        saveLocal(LS_T, templates);
+        renderTemplateList(); refreshCreateTemplateOptions();
+      } else if (isFirstRun) {
+        templates.forEach(function(t){ db.collection("templates").doc(t.id).set(t).catch(function(){}); });
+      }
+    }).catch(function(){});
+    db.collection("templates").onSnapshot(function(snap){
+      templates = snap.docs.map(function(d){ return d.data(); });
+      saveLocal(LS_T, templates);
+      renderTemplateList(); refreshCreateTemplateOptions();
+    }, function(){ });
+    db.collection("history").orderBy("createdAt","desc").limit(30).onSnapshot(function(snap){
+      history = snap.docs.map(function(d){ return d.data(); });
+      saveLocal(LS_H, history);
+      renderHistory();
+    }, function(){ });
+  }).catch(function(){ setStorageBadge(false); });
+})();
+
+function setStorageBadge(ok){
+  var el = document.getElementById("storageBadge");
+  if(ok){ el.textContent = "クラウド保存 有効"; el.className = "badge ok"; }
+  else { el.textContent = "この端末に保存"; el.className = "badge"; }
+}
+
+/* ---------- template CRUD ---------- */
+function upsertTemplate(tpl){
+  tpl.updatedAt = Date.now();
+  var idx = templates.findIndex(function(t){ return t.id === tpl.id; });
+  if(idx >= 0) templates[idx] = tpl; else templates.push(tpl);
+  saveLocal(LS_T, templates);
+  renderTemplateList(); refreshCreateTemplateOptions();
+  if(db){ db.collection("templates").doc(tpl.id).set(tpl).catch(function(e){ toast("クラウド保存に失敗しました"); }); }
+}
+function removeTemplate(id){
+  templates = templates.filter(function(t){ return t.id !== id; });
+  saveLocal(LS_T, templates);
+  renderTemplateList(); refreshCreateTemplateOptions();
+  if(db){ db.collection("templates").doc(id).delete().catch(function(){}); }
+}
+function addHistoryEntry(entry){
+  entry.id = entry.id || uid();
+  entry.createdAt = Date.now();
+  history.unshift(entry);
+  history = history.slice(0,30);
+  saveLocal(LS_H, history);
+  renderHistory();
+  if(db){ db.collection("history").doc(entry.id).set(entry).catch(function(){}); }
+}
+function removeHistoryEntry(id){
+  history = history.filter(function(h){ return h.id !== id; });
+  saveLocal(LS_H, history);
+  renderHistory();
+  if(db){ db.collection("history").doc(id).delete().catch(function(){}); }
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll(".nav-btn").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    document.querySelectorAll(".nav-btn").forEach(function(b){ b.classList.remove("active"); });
+    btn.classList.add("active");
+    ["templates","create","images"].forEach(function(name){
+      document.getElementById("panel-"+name).hidden = (name !== btn.dataset.tab);
+    });
+  });
+});
+
+/* ---------- template list rendering ---------- */
+function renderTemplateList(){
+  var grid = document.getElementById("templateGrid");
+  var empty = document.getElementById("templateEmpty");
+  if(!templates.length){ grid.innerHTML=""; empty.hidden = false; return; }
+  empty.hidden = true;
+  grid.innerHTML = templates.map(function(t){
+    var vlist = (t.variables||[]).map(function(v){ return escapeHtml(v.label||v.key); }).join(" ・ ") || "なし";
+    return '<div class="template-card">'
+      + '<div><h3>'+escapeHtml(t.name)+'</h3>'
+      + '<div class="tpl-meta">'
+      + (t.isSample? '<span class="chip sample">サンプル</span>' : '')
+      + '<span class="chip">'+escapeHtml(t.condition||"未設定")+'</span>'
+      + '<span class="chip">'+escapeHtml(t.shippingFrom||"未設定")+'</span>'
+      + '</div></div>'
+      + '<div class="tpl-title-preview">'+escapeHtml(t.titleTemplate||"（タイトルひな形未設定）")+'</div>'
+      + '<div class="hint">可変項目：'+vlist+'</div>'
+      + '<div class="row"><button class="btn btn-sm" type="button" data-edit="'+t.id+'">編集</button>'
+      + '<button class="btn btn-sm btn-ghost" type="button" data-dup="'+t.id+'">複製</button></div>'
+      + '</div>';
+  }).join("");
+  grid.querySelectorAll("[data-edit]").forEach(function(b){ b.addEventListener("click", function(){ openEditor(b.dataset.edit); }); });
+  grid.querySelectorAll("[data-dup]").forEach(function(b){ b.addEventListener("click", function(){ duplicateTemplate(b.dataset.dup); }); });
+}
+function duplicateTemplate(id){
+  var t = templates.find(function(x){ return x.id === id; });
+  if(!t) return;
+  var copy = JSON.parse(JSON.stringify(t));
+  copy.id = uid(); copy.name = t.name + "（コピー）"; copy.isSample = false;
+  upsertTemplate(copy);
+  toast("複製しました");
+}
+
+/* ---------- template editor ---------- */
+var variableRowsEl = document.getElementById("variableRows");
+function newVariableRow(v){
+  v = v || {key:"",label:"",type:"text",options:[],unit:"",def:""};
+  var row = document.createElement("div");
+  row.className = "variable-row";
+  row.innerHTML =
+    '<div class="field"><label>キー</label><input type="text" class="v-key" placeholder="price" value="'+escapeHtml(v.key)+'"></div>'
+    + '<div class="field"><label>表示名</label><input type="text" class="v-label" placeholder="価格" value="'+escapeHtml(v.label)+'"></div>'
+    + '<div class="field"><label>種類</label><select class="v-type"><option value="text">テキスト</option><option value="number">数値</option><option value="select">選択肢</option></select></div>'
+    + '<div class="field v-extra"></div>'
+    + '<button type="button" class="btn btn-danger-ghost btn-sm vrow-remove">削除</button>';
+  row.querySelector(".v-type").value = v.type || "text";
+  var extra = row.querySelector(".v-extra");
+  function renderExtra(){
+    var type = row.querySelector(".v-type").value;
+    if(type === "select"){
+      extra.innerHTML = '<label>選択肢（カンマ区切り）</label><input type="text" class="v-options" placeholder="ブラック,ホワイト" value="'+escapeHtml((v.options||[]).join(","))+'">';
+    } else if(type === "number"){
+      extra.innerHTML = '<label>単位（任意）</label><input type="text" class="v-unit" placeholder="円 / mm" value="'+escapeHtml(v.unit||"")+'">';
+    } else {
+      extra.innerHTML = '<label>初期値（任意）</label><input type="text" class="v-def" placeholder="" value="'+escapeHtml(v.def||"")+'">';
+    }
+  }
+  row.querySelector(".v-type").addEventListener("change", renderExtra);
+  renderExtra();
+  row.querySelector(".vrow-remove").addEventListener("click", function(){ row.remove(); });
+  return row;
+}
+document.getElementById("btnAddVariable").addEventListener("click", function(){
+  variableRowsEl.appendChild(newVariableRow());
+});
+function collectVariables(){
+  var out = [];
+  variableRowsEl.querySelectorAll(".variable-row").forEach(function(row){
+    var key = row.querySelector(".v-key").value.trim().replace(/[^a-zA-Z0-9_]/g,"");
+    if(!key) return;
+    var type = row.querySelector(".v-type").value;
+    var label = row.querySelector(".v-label").value.trim() || key;
+    var v = {key:key, label:label, type:type, options:[], unit:"", def:""};
+    if(type === "select"){
+      var optEl = row.querySelector(".v-options");
+      v.options = optEl ? optEl.value.split(",").map(function(s){ return s.trim(); }).filter(Boolean) : [];
+      v.def = v.options[0] || "";
+    } else if(type === "number"){
+      var unitEl = row.querySelector(".v-unit");
+      v.unit = unitEl ? unitEl.value.trim() : "";
+    } else {
+      var defEl = row.querySelector(".v-def");
+      v.def = defEl ? defEl.value : "";
+    }
+    out.push(v);
+  });
+  return out;
+}
+
+var condSel = document.getElementById("f_condition");
+var payerSel = document.getElementById("f_shippingPayer");
+var methodSel = document.getElementById("f_shippingMethod");
+var fromSel = document.getElementById("f_shippingFrom");
+var daysSel = document.getElementById("f_shippingDays");
+fillSelect(condSel, CONDITIONS, CONDITIONS[0]);
+fillSelect(payerSel, SHIPPING_PAYERS, SHIPPING_PAYERS[0]);
+fillSelect(methodSel, SHIPPING_METHODS, SHIPPING_METHODS[0]);
+fillSelect(fromSel, PREFECTURES, "滋賀県");
+fillSelect(daysSel, SHIPPING_DAYS, SHIPPING_DAYS[0]);
+
+function openEditor(id){
+  editingId = id || null;
+  var t = id ? templates.find(function(x){ return x.id === id; }) : null;
+  document.getElementById("editorTitle").textContent = t ? "テンプレートを編集" : "新規テンプレート";
+  document.getElementById("btnDeleteTemplate").hidden = !t;
+  document.getElementById("f_name").value = t ? t.name : "";
+  document.getElementById("f_category").value = t ? (t.category||"") : "";
+  fillSelect(condSel, CONDITIONS, t ? t.condition : CONDITIONS[0]);
+  fillSelect(payerSel, SHIPPING_PAYERS, t ? t.shippingPayer : SHIPPING_PAYERS[0]);
+  fillSelect(methodSel, SHIPPING_METHODS, t ? t.shippingMethod : SHIPPING_METHODS[0]);
+  fillSelect(fromSel, PREFECTURES, t ? t.shippingFrom : "滋賀県");
+  fillSelect(daysSel, SHIPPING_DAYS, t ? t.shippingDays : SHIPPING_DAYS[0]);
+  document.getElementById("f_title").value = t ? (t.titleTemplate||"") : "";
+  document.getElementById("f_desc").value = t ? (t.descriptionTemplate||"") : "";
+  variableRowsEl.innerHTML = "";
+  var vars = t && t.variables && t.variables.length ? t.variables : [{key:"price",label:"価格",type:"number",options:[],unit:"円",def:""}];
+  vars.forEach(function(v){ variableRowsEl.appendChild(newVariableRow(v)); });
+  document.getElementById("templateListView").hidden = true;
+  document.getElementById("templateEditView").hidden = false;
+}
+function closeEditor(){
+  document.getElementById("templateEditView").hidden = true;
+  document.getElementById("templateListView").hidden = false;
+  editingId = null;
+}
+document.getElementById("btnNewTemplate").addEventListener("click", function(){ openEditor(null); });
+document.getElementById("btnBackToList").addEventListener("click", closeEditor);
+document.getElementById("btnCancelTemplate").addEventListener("click", closeEditor);
+document.getElementById("btnDeleteTemplate").addEventListener("click", function(){
+  if(!editingId) return;
+  if(confirm("このテンプレートを削除しますか？")){
+    removeTemplate(editingId);
+    closeEditor();
+    toast("削除しました");
+  }
+});
+document.getElementById("templateForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  var name = document.getElementById("f_name").value.trim();
+  if(!name){ toast("テンプレート名を入力してください"); return; }
+  var tpl = {
+    id: editingId || uid(),
+    isSample: false,
+    name: name,
+    category: document.getElementById("f_category").value.trim(),
+    condition: condSel.value,
+    shippingPayer: payerSel.value,
+    shippingMethod: methodSel.value,
+    shippingFrom: fromSel.value,
+    shippingDays: daysSel.value,
+    titleTemplate: document.getElementById("f_title").value,
+    descriptionTemplate: document.getElementById("f_desc").value,
+    variables: collectVariables()
+  };
+  upsertTemplate(tpl);
+  closeEditor();
+  toast("保存しました");
+});
+
+/* ---------- create panel ---------- */
+var createSelect = document.getElementById("createTemplateSelect");
+var createVariableForm = document.getElementById("createVariableForm");
+var currentFormValues = {};
+
+function refreshCreateTemplateOptions(){
+  var prevValue = createSelect.value;
+  createSelect.innerHTML = templates.map(function(t){ return '<option value="'+t.id+'">'+escapeHtml(t.name)+'</option>'; }).join("");
+  if(!templates.length){ createSelect.innerHTML = '<option value="">（テンプレート未登録）</option>'; }
+  var stillExists = templates.some(function(t){ return t.id === prevValue; });
+  createSelect.value = stillExists ? prevValue : (templates[0] ? templates[0].id : "");
+  renderCreateForm();
+}
+function currentTemplate(){
+  return templates.find(function(t){ return t.id === createSelect.value; }) || null;
+}
+function renderCreateForm(){
+  var t = currentTemplate();
+  createVariableForm.innerHTML = "";
+  currentFormValues = {};
+  if(!t){ renderOutputs(); return; }
+  (t.variables||[]).forEach(function(v){
+    var wrap = document.createElement("div");
+    wrap.className = "field";
+    var control;
+    if(v.type === "select"){
+      control = '<select class="cv-input" data-key="'+v.key+'">'+ (v.options||[]).map(function(o){ return '<option value="'+escapeHtml(o)+'">'+escapeHtml(o)+'</option>'; }).join("") +'</select>';
+    } else if(v.type === "number"){
+      control = '<input type="number" class="cv-input" data-key="'+v.key+'" value="'+escapeHtml(v.def||"")+'">';
+    } else {
+      control = '<input type="text" class="cv-input" data-key="'+v.key+'" value="'+escapeHtml(v.def||"")+'">';
+    }
+    wrap.innerHTML = '<label>'+escapeHtml(v.label)+(v.unit? ' ('+escapeHtml(v.unit)+')':'')+'</label>'+control;
+    createVariableForm.appendChild(wrap);
+  });
+  createVariableForm.querySelectorAll(".cv-input").forEach(function(inp){
+    inp.addEventListener("input", renderOutputs);
+    inp.addEventListener("change", renderOutputs);
+  });
+  renderOutputs();
+}
+function readFormValues(){
+  var vals = {};
+  createVariableForm.querySelectorAll(".cv-input").forEach(function(inp){ vals[inp.dataset.key] = inp.value; });
+  return vals;
+}
+function renderTemplateString(str, variables, values){
+  return String(str||"").replace(/\{([a-zA-Z0-9_]+)\}/g, function(m, key){
+    var v = variables.find(function(x){ return x.key === key; });
+    if(!v) return m;
+    var raw = values[key];
+    if(raw === undefined || raw === "") return "";
+    if(v.type === "number"){
+      var n = Number(raw);
+      return (isNaN(n) ? raw : n.toLocaleString("ja-JP")) + (v.unit||"");
+    }
+    return String(raw);
+  });
+}
+function renderOutputs(){
+  var t = currentTemplate();
+  var outTitle = document.getElementById("outTitle");
+  var outDesc = document.getElementById("outDesc");
+  var outFixed = document.getElementById("outFixed");
+  if(!t){ outTitle.textContent=""; outDesc.textContent=""; outFixed.innerHTML=""; return; }
+  var values = readFormValues();
+  currentFormValues = values;
+  outTitle.textContent = renderTemplateString(t.titleTemplate, t.variables||[], values);
+  outDesc.textContent = renderTemplateString(t.descriptionTemplate, t.variables||[], values);
+  var fixedPairs = [
+    ["カテゴリー", t.category||"未設定"],
+    ["商品の状態", t.condition],
+    ["配送料の負担", t.shippingPayer],
+    ["配送の方法", t.shippingMethod],
+    ["発送元の地域", t.shippingFrom],
+    ["発送までの日数", t.shippingDays]
+  ];
+  var priceVar = (t.variables||[]).find(function(v){ return v.key === "price"; });
+  if(priceVar){
+    var pv = values.price;
+    var pn = Number(pv);
+    fixedPairs.push(["価格", pv ? (isNaN(pn)? pv : pn.toLocaleString("ja-JP")+"円") : "未入力"]);
+  }
+  outFixed.innerHTML = fixedPairs.map(function(p){ return '<div><dt>'+escapeHtml(p[0])+'</dt><dd>'+escapeHtml(p[1]||"未設定")+'</dd></div>'; }).join("");
+}
+createSelect.addEventListener("change", renderCreateForm);
+
+document.querySelectorAll("[data-copy]").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    var el = document.getElementById(btn.dataset.copy);
+    var text = el.textContent;
+    if(!text){ toast("コピーする内容がありません"); return; }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ toast("コピーしました"); }).catch(function(){ toast("コピーできませんでした"); });
+    } else { toast("コピーできませんでした"); }
+  });
+});
+
+document.getElementById("btnSaveHistory").addEventListener("click", function(){
+  var t = currentTemplate();
+  if(!t){ toast("テンプレートを選んでください"); return; }
+  addHistoryEntry({
+    templateId: t.id,
+    templateName: t.name,
+    title: document.getElementById("outTitle").textContent,
+    description: document.getElementById("outDesc").textContent
+  });
+  toast("履歴に保存しました");
+});
+function renderHistory(){
+  var list = document.getElementById("historyList");
+  var empty = document.getElementById("historyEmpty");
+  if(!history.length){ list.innerHTML=""; empty.hidden=false; return; }
+  empty.hidden = true;
+  list.innerHTML = history.map(function(h){
+    var d = new Date(h.createdAt);
+    var dateStr = (d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+    return '<li><div class="hl-main"><div class="hl-title">'+escapeHtml(h.title||"(無題)")+'</div><div class="hl-meta">'+escapeHtml(h.templateName||"")+' ・ '+dateStr+'</div></div>'
+      + '<div class="hl-actions"><button class="btn btn-sm" type="button" data-hcopy="'+h.id+'">コピー</button><button class="btn btn-sm btn-danger-ghost" type="button" data-hdel="'+h.id+'">削除</button></div></li>';
+  }).join("");
+  list.querySelectorAll("[data-hcopy]").forEach(function(b){
+    b.addEventListener("click", function(){
+      var h = history.find(function(x){ return x.id === b.dataset.hcopy; });
+      if(!h) return;
+      var text = h.title + "\n\n" + h.description;
+      navigator.clipboard.writeText(text).then(function(){ toast("コピーしました"); }).catch(function(){ toast("コピーできませんでした"); });
+    });
+  });
+  list.querySelectorAll("[data-hdel]").forEach(function(b){
+    b.addEventListener("click", function(){ removeHistoryEntry(b.dataset.hdel); });
+  });
+}
+
+/* ---------- image editor ---------- */
+function computeDraw(squareSize, imgW, imgH, zoom, panXFrac, panYFrac){
+  var coverScale = Math.max(squareSize/imgW, squareSize/imgH);
+  var scale = coverScale * zoom;
+  var dw = imgW*scale, dh = imgH*scale;
+  var maxPanX = Math.max(0,(dw-squareSize)/2), maxPanY = Math.max(0,(dh-squareSize)/2);
+  var panX = Math.max(-maxPanX, Math.min(maxPanX, panXFrac*squareSize));
+  var panY = Math.max(-maxPanY, Math.min(maxPanY, panYFrac*squareSize));
+  var dx = squareSize/2 - dw/2 + panX;
+  var dy = squareSize/2 - dh/2 + panY;
+  return {dw:dw, dh:dh, dx:dx, dy:dy, panXFrac:panX/squareSize, panYFrac:panY/squareSize};
+}
+function drawSquare(canvas, entry, squareSize){
+  canvas.width = squareSize; canvas.height = squareSize;
+  var ctx = canvas.getContext("2d");
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue("--surface-2") || "#eee";
+  ctx.fillRect(0,0,squareSize,squareSize);
+  if(!entry.img) return;
+  var d = computeDraw(squareSize, entry.img.naturalWidth, entry.img.naturalHeight, entry.zoom, entry.panXFrac, entry.panYFrac);
+  ctx.drawImage(entry.img, d.dx, d.dy, d.dw, d.dh);
+}
+
+var filmstripEl = document.getElementById("filmstrip");
+var imagesEmptyEl = document.getElementById("imagesEmpty");
+function renderFilmstrip(){
+  imagesEmptyEl.hidden = images.length > 0;
+  filmstripEl.innerHTML = "";
+  images.forEach(function(entry, i){
+    var item = document.createElement("div");
+    item.className = "filmstrip-item";
+    var idx = document.createElement("div");
+    idx.className = "fi-idx";
+    idx.textContent = String(i+1).padStart(2,"0") + " ・ " + entry.name;
+    var canvas = document.createElement("canvas");
+    drawSquare(canvas, entry, 160);
+    var actions = document.createElement("div");
+    actions.className = "fi-actions";
+    actions.innerHTML =
+      '<button class="btn" type="button" data-act="up">↑</button>'
+      + '<button class="btn" type="button" data-act="down">↓</button>'
+      + '<button class="btn" type="button" data-act="edit">トリミング</button>'
+      + '<button class="btn btn-danger-ghost" type="button" data-act="del">削除</button>';
+    actions.querySelector('[data-act="up"]').addEventListener("click", function(){ moveImage(entry.id,-1); });
+    actions.querySelector('[data-act="down"]').addEventListener("click", function(){ moveImage(entry.id,1); });
+    actions.querySelector('[data-act="edit"]').addEventListener("click", function(){ openCropEditor(entry.id); });
+    actions.querySelector('[data-act="del"]').addEventListener("click", function(){ removeImage(entry.id); });
+    item.appendChild(idx); item.appendChild(canvas); item.appendChild(actions);
+    filmstripEl.appendChild(item);
+  });
+  document.getElementById("exportCount").textContent = images.length;
+}
+function moveImage(id, dir){
+  var i = images.findIndex(function(e){ return e.id === id; });
+  var j = i + dir;
+  if(i<0 || j<0 || j>=images.length) return;
+  var tmp = images[i]; images[i] = images[j]; images[j] = tmp;
+  renderFilmstrip();
+}
+function removeImage(id){
+  images = images.filter(function(e){ return e.id !== id; });
+  if(activeCropId === id) closeCropEditor();
+  renderFilmstrip();
+}
+
+document.getElementById("imgInput").addEventListener("change", function(e){
+  var files = Array.from(e.target.files || []);
+  files.forEach(function(file){
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function(){
+      images.push({id:uid(), img:img, name:file.name, zoom:1, panXFrac:0, panYFrac:0});
+      renderFilmstrip();
+    };
+    img.src = url;
+  });
+  e.target.value = "";
+});
+
+var cropEditorEl = document.getElementById("cropEditor");
+var cropCanvas = document.getElementById("cropCanvas");
+var zoomRange = document.getElementById("zoomRange");
+function openCropEditor(id){
+  activeCropId = id;
+  var entry = images.find(function(e){ return e.id === id; });
+  if(!entry) return;
+  zoomRange.value = entry.zoom;
+  cropEditorEl.hidden = false;
+  drawSquare(cropCanvas, entry, 320);
+  cropEditorEl.scrollIntoView({block:"nearest", behavior:"smooth"});
+}
+function closeCropEditor(){
+  activeCropId = null;
+  cropEditorEl.hidden = true;
+}
+document.getElementById("btnCloseCrop").addEventListener("click", function(){ closeCropEditor(); renderFilmstrip(); });
+zoomRange.addEventListener("input", function(){
+  var entry = images.find(function(e){ return e.id === activeCropId; });
+  if(!entry) return;
+  entry.zoom = parseFloat(zoomRange.value);
+  drawSquare(cropCanvas, entry, 320);
+});
+function cropPointer(e){
+  var rect = cropCanvas.getBoundingClientRect();
+  var scaleX = cropCanvas.width / rect.width;
+  var scaleY = cropCanvas.height / rect.height;
+  var clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  var clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  return {x:(clientX-rect.left)*scaleX, y:(clientY-rect.top)*scaleY};
+}
+cropCanvas.addEventListener("pointerdown", function(e){
+  var entry = images.find(function(x){ return x.id === activeCropId; });
+  if(!entry) return;
+  cropCanvas.setPointerCapture(e.pointerId);
+  dragState = {startPt: cropPointer(e), startPanX: entry.panXFrac, startPanY: entry.panYFrac};
+});
+cropCanvas.addEventListener("pointermove", function(e){
+  if(!dragState) return;
+  var entry = images.find(function(x){ return x.id === activeCropId; });
+  if(!entry) return;
+  var pt = cropPointer(e);
+  var dx = pt.x - dragState.startPt.x;
+  var dy = pt.y - dragState.startPt.y;
+  var d = computeDraw(cropCanvas.width, entry.img.naturalWidth, entry.img.naturalHeight, entry.zoom,
+    dragState.startPanX + dx/cropCanvas.width, dragState.startPanY + dy/cropCanvas.width);
+  entry.panXFrac = d.panXFrac; entry.panYFrac = d.panYFrac;
+  drawSquare(cropCanvas, entry, 320);
+});
+function endDrag(){ dragState = null; }
+cropCanvas.addEventListener("pointerup", endDrag);
+cropCanvas.addEventListener("pointercancel", endDrag);
+
+/* ---------- export ---------- */
+document.getElementById("btnExportZip").addEventListener("click", function(){
+  exportZip();
+});
+function exportZip(){
+  var statusEl = document.getElementById("exportStatus");
+  if(!images.length){ toast("写真を追加してください"); return; }
+  if(typeof JSZip === "undefined"){ toast("ZIP機能の読み込みに失敗しました。再読み込みしてください。"); return; }
+  var prefix = slugify(document.getElementById("exportPrefix").value || (currentTemplate() ? currentTemplate().name : "photo"));
+  var size = parseInt(document.getElementById("exportSize").value, 10);
+  var format = document.getElementById("exportFormat").value;
+  var ext = format === "png" ? "png" : "jpg";
+  var mime = format === "png" ? "image/png" : "image/jpeg";
+  statusEl.textContent = "書き出し中…";
+  var zip = new JSZip();
+  var tasks = images.map(function(entry, i){
+    return new Promise(function(resolve){
+      var c = document.createElement("canvas");
+      c.width = size; c.height = size;
+      var ctx = c.getContext("2d");
+      if(format !== "png"){ ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,size,size); }
+      var d = computeDraw(size, entry.img.naturalWidth, entry.img.naturalHeight, entry.zoom, entry.panXFrac, entry.panYFrac);
+      ctx.drawImage(entry.img, d.dx, d.dy, d.dw, d.dh);
+      c.toBlob(function(blob){
+        var name = prefix + "_" + String(i+1).padStart(2,"0") + "." + ext;
+        zip.file(name, blob);
+        resolve();
+      }, mime, 0.9);
+    });
+  });
+  Promise.all(tasks).then(function(){
+    return zip.generateAsync({type:"blob"});
+  }).then(function(blob){
+    var zipName = prefix + "_photos.zip";
+    if(downloadsNS){
+      return downloadsNS.save({filename: zipName, data: blob}).then(function(res){
+        statusEl.textContent = res.status === "saved" ? "保存しました：" + zipName : "送信しました：" + zipName;
+      }).catch(function(e){
+        if(e && e.code === "declined"){ statusEl.textContent = "キャンセルしました"; }
+        else { statusEl.textContent = "保存できませんでした（"+(e&&e.code||"エラー")+"）"; }
+      });
+    } else {
+      try{
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url; a.download = zipName;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+        statusEl.textContent = "ダウンロードしました：" + zipName;
+      }catch(e){
+        statusEl.textContent = "ダウンロードに失敗しました。";
+      }
+    }
+  }).catch(function(){
+    statusEl.textContent = "書き出しに失敗しました。";
+  });
+}
+
+/* ---------- init ---------- */
+renderTemplateList();
+refreshCreateTemplateOptions();
+renderHistory();
+
+})();
+</script>
+</body>
+</html>
