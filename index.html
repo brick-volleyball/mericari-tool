@@ -121,6 +121,14 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 .selected-chip{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--accent-soft);color:var(--accent);padding:10px 14px;border-radius:var(--radius-sm);font-size:.88rem;margin-bottom:14px;}
 .selected-chip strong{font-family:var(--font-display);}
 .step-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.tpl-thumb{width:100%;height:130px;object-fit:cover;border-radius:var(--radius-sm);display:block;background:var(--surface-2);}
+.char-count{font-family:var(--font-mono);font-size:.74rem;font-weight:600;color:var(--text-dim);}
+.char-count.over{color:var(--danger);}
+h3 .char-count{font-family:var(--font-mono);font-weight:600;}
+.ref-image-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.ref-image-thumb{position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;border:1px solid var(--border);flex:none;}
+.ref-image-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.ref-image-thumb button{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(0,0,0,.6);color:#fff;font-size:.72rem;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;}
 
 .editor-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);}
 .editor-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
@@ -215,6 +223,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
         <div>
           <h1>① 画像編集</h1>
           <p class="lead">写真を正方形に切り抜いて、順番どおりの連番ファイルとしてまとめてダウンロードします。</p>
+          <p class="hint" id="imagesTplHint"></p>
         </div>
       </div>
 
@@ -307,11 +316,11 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
 
       <div class="output-grid">
         <div class="card output-card">
-          <div class="output-head"><h3>タイトル</h3><button class="btn btn-sm" data-copy="outTitle" type="button">コピー</button></div>
+          <div class="output-head"><h3>タイトル <span class="char-count" id="titleOutCount"></span></h3><button class="btn btn-sm" data-copy="outTitle" type="button">コピー</button></div>
           <div id="outTitle" class="output-text"></div>
         </div>
         <div class="card output-card">
-          <div class="output-head"><h3>商品説明</h3><button class="btn btn-sm" data-copy="outDesc" type="button">コピー</button></div>
+          <div class="output-head"><h3>商品説明 <span class="char-count" id="descOutCount"></span></h3><button class="btn btn-sm" data-copy="outDesc" type="button">コピー</button></div>
           <div id="outDesc" class="output-text"></div>
         </div>
         <div class="card output-card">
@@ -340,6 +349,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
           <button class="btn btn-ghost" type="button" data-goto="select">← テンプレート選択に戻る</button>
+          <button id="btnExportTemplates" class="btn btn-ghost" type="button">書き出す</button>
+          <button id="btnImportTemplates" class="btn btn-ghost" type="button">読み込む</button>
+          <input type="file" id="importFileInput" accept="application/json,.json" hidden>
           <button id="btnNewTemplate" class="btn btn-accent" type="button">＋ 新規テンプレート</button>
         </div>
       </div>
@@ -370,19 +382,26 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px soli
           </div>
 
           <div class="field">
-            <label for="f_title">タイトルひな形</label>
+            <label for="f_title">タイトルひな形 <span class="char-count" id="titleCharCount"></span></label>
             <input type="text" id="f_title" placeholder="例：【3Dプリント】ベアブリック 六角ベース {size} {color}">
           </div>
           <div class="field">
-            <label for="f_desc">商品説明ひな形</label>
+            <label for="f_desc">商品説明ひな形 <span class="char-count" id="descCharCount"></span></label>
             <textarea id="f_desc" rows="8" placeholder="例：ハンドメイドの六角形ディスプレイベースです。"></textarea>
           </div>
-          <p class="hint">ヒント：下の「可変項目」で作ったキーを <code>{price}</code> のように波かっこで囲むと、商品説明タブで入力した値に自動で差し替わります。</p>
+          <p class="hint">ヒント：下の「可変項目」で作ったキーを <code>{price}</code> のように波かっこで囲むと、商品説明タブで入力した値に自動で差し替わります。文字数は可変項目の初期値で計算した目安です。</p>
 
           <div class="field">
             <label>可変項目（商品ごとに変わる項目）</label>
             <div id="variableRows" class="variable-rows"></div>
             <button type="button" id="btnAddVariable" class="btn btn-ghost btn-sm">＋ 項目を追加</button>
+          </div>
+
+          <div class="field">
+            <label for="refImageInput">参考画像（任意・最大4枚）</label>
+            <div id="refImageRow" class="ref-image-row"></div>
+            <input type="file" id="refImageInput" accept="image/*" multiple>
+            <p class="hint">商品の見本写真を保存しておくと、①②を選ぶ画面ですぐ確認できます。書き出し・読み込みにも含まれます。</p>
           </div>
 
           <div class="editor-actions">
@@ -417,8 +436,15 @@ var LS_H = "mercariKit_history_v1";
 /* ---------- helpers ---------- */
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function escapeHtml(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+function charLen(s){ return Array.from(String(s==null?"":s)).length; }
+function setCharCount(elId, len, max){
+  var el = document.getElementById(elId);
+  if(!el) return;
+  el.textContent = len + " / " + max + "文字";
+  el.classList.toggle("over", len > max);
+}
 function loadLocal(key, fallback){ try{ var raw = localStorage.getItem(key); return raw? JSON.parse(raw) : fallback; }catch(e){ return fallback; } }
-function saveLocal(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+function saveLocal(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); return true; }catch(e){ return false; } }
 function toast(msg){
   var el = document.getElementById("toast");
   el.textContent = msg; el.hidden = false;
@@ -529,7 +555,8 @@ function upsertTemplate(tpl){
   tpl.updatedAt = Date.now();
   var idx = templates.findIndex(function(t){ return t.id === tpl.id; });
   if(idx >= 0) templates[idx] = tpl; else templates.push(tpl);
-  saveLocal(LS_T, templates);
+  var ok = saveLocal(LS_T, templates);
+  if(!ok && !db){ toast("保存容量の上限に達した可能性があります。参考画像を減らしてください"); }
   renderTemplateList(); refreshTemplateDependents();
   if(db){ db.collection("templates").doc(tpl.id).set(tpl).catch(function(e){ toast("クラウド保存に失敗しました"); }); }
 }
@@ -582,6 +609,7 @@ function renderTemplateList(){
   grid.innerHTML = templates.map(function(t){
     var vlist = (t.variables||[]).map(function(v){ return escapeHtml(v.label||v.key); }).join(" ・ ") || "なし";
     return '<div class="template-card">'
+      + (t.refImages && t.refImages[0] ? '<img class="tpl-thumb" src="'+t.refImages[0].dataUrl+'" alt="">' : '')
       + '<div><h3>'+escapeHtml(t.name)+'</h3>'
       + '<div class="tpl-meta">'
       + (t.isSample? '<span class="chip sample">サンプル</span>' : '')
@@ -591,11 +619,19 @@ function renderTemplateList(){
       + '<div class="tpl-title-preview">'+escapeHtml(t.titleTemplate||"（タイトルひな形未設定）")+'</div>'
       + '<div class="hint">可変項目：'+vlist+'</div>'
       + '<div class="row"><button class="btn btn-sm" type="button" data-edit="'+t.id+'">編集</button>'
-      + '<button class="btn btn-sm btn-ghost" type="button" data-dup="'+t.id+'">複製</button></div>'
+      + '<button class="btn btn-sm btn-ghost" type="button" data-dup="'+t.id+'">複製</button>'
+      + '<button class="btn btn-sm btn-danger-ghost" type="button" data-del="'+t.id+'">削除</button></div>'
       + '</div>';
   }).join("");
   grid.querySelectorAll("[data-edit]").forEach(function(b){ b.addEventListener("click", function(){ openEditor(b.dataset.edit); }); });
   grid.querySelectorAll("[data-dup]").forEach(function(b){ b.addEventListener("click", function(){ duplicateTemplate(b.dataset.dup); }); });
+  grid.querySelectorAll("[data-del]").forEach(function(b){ b.addEventListener("click", function(){
+    var t = templates.find(function(x){ return x.id === b.dataset.del; });
+    if(t && confirm('「'+t.name+'」を削除しますか？')){
+      removeTemplate(b.dataset.del);
+      toast("削除しました");
+    }
+  }); });
 }
 function duplicateTemplate(id){
   var t = templates.find(function(x){ return x.id === id; });
@@ -605,6 +641,76 @@ function duplicateTemplate(id){
   upsertTemplate(copy);
   toast("複製しました");
 }
+
+/* ---------- template export / import ---------- */
+function downloadBlob(blob, filename, okMessage){
+  if(downloadsNS){
+    downloadsNS.save({filename: filename, data: blob}).then(function(res){
+      toast(res.status === "saved" ? okMessage : "送信しました");
+    }).catch(function(e){
+      if(e && e.code === "declined"){ return; }
+      toast("書き出しに失敗しました（"+(e&&e.code||"エラー")+"）");
+    });
+  } else {
+    try{
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+      toast(okMessage);
+    }catch(e){ toast("書き出しに失敗しました"); }
+  }
+}
+function exportTemplates(){
+  if(!templates.length){ toast("書き出すテンプレートがありません"); return; }
+  var payload = {type:"mercari-listing-kit-templates", version:1, exportedAt:new Date().toISOString(), templates:templates};
+  var blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  var stamp = new Date().toISOString().slice(0,10).replace(/-/g,"");
+  downloadBlob(blob, "mercari-templates_"+stamp+".json", "書き出しました");
+}
+function importTemplatesFromFile(file){
+  var reader = new FileReader();
+  reader.onload = function(){
+    var data;
+    try{ data = JSON.parse(String(reader.result)); }
+    catch(e){ toast("読み込みに失敗しました。JSONファイルを選んでください"); return; }
+    var list = Array.isArray(data) ? data : (data && Array.isArray(data.templates) ? data.templates : null);
+    if(!list){ toast("読み込みに失敗しました。ファイル形式を確認してください"); return; }
+    var count = 0;
+    list.forEach(function(raw){
+      if(!raw || !raw.name) return;
+      upsertTemplate({
+        id: uid(),
+        isSample: false,
+        name: raw.name,
+        category: raw.category || "",
+        condition: raw.condition || CONDITIONS[0],
+        shippingPayer: raw.shippingPayer || SHIPPING_PAYERS[0],
+        shippingMethod: raw.shippingMethod || SHIPPING_METHODS[0],
+        shippingFrom: raw.shippingFrom || "滋賀県",
+        shippingDays: raw.shippingDays || SHIPPING_DAYS[0],
+        titleTemplate: raw.titleTemplate || "",
+        descriptionTemplate: raw.descriptionTemplate || "",
+        variables: Array.isArray(raw.variables) ? raw.variables : [],
+        refImages: Array.isArray(raw.refImages) ? raw.refImages.slice(0,4) : []
+      });
+      count++;
+    });
+    toast(count ? count+"件のテンプレートを読み込みました" : "読み込めるテンプレートがありませんでした");
+  };
+  reader.onerror = function(){ toast("ファイルの読み込みに失敗しました"); };
+  reader.readAsText(file);
+}
+document.getElementById("btnExportTemplates").addEventListener("click", exportTemplates);
+document.getElementById("btnImportTemplates").addEventListener("click", function(){
+  document.getElementById("importFileInput").click();
+});
+document.getElementById("importFileInput").addEventListener("change", function(e){
+  var file = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if(file) importTemplatesFromFile(file);
+});
 
 /* ---------- template editor ---------- */
 var variableRowsEl = document.getElementById("variableRows");
@@ -673,6 +779,52 @@ fillSelect(methodSel, SHIPPING_METHODS, SHIPPING_METHODS[0]);
 fillSelect(fromSel, PREFECTURES, "滋賀県");
 fillSelect(daysSel, SHIPPING_DAYS, SHIPPING_DAYS[0]);
 
+var editorRefImages = [];
+function fileToCompressedDataUrl(file, maxDim, quality){
+  return new Promise(function(resolve, reject){
+    var url = URL.createObjectURL(file);
+    var img = new Image();
+    img.onload = function(){
+      var scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+      var w = Math.max(1, Math.round(img.naturalWidth * scale));
+      var h = Math.max(1, Math.round(img.naturalHeight * scale));
+      var c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      var ctx = c.getContext("2d");
+      ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,w,h);
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("load failed")); };
+    img.src = url;
+  });
+}
+function renderRefImageRow(){
+  var row = document.getElementById("refImageRow");
+  row.innerHTML = editorRefImages.map(function(img){
+    return '<div class="ref-image-thumb"><img src="'+img.dataUrl+'" alt=""><button type="button" data-rmimg="'+img.id+'" aria-label="削除">×</button></div>';
+  }).join("");
+  row.querySelectorAll("[data-rmimg]").forEach(function(b){
+    b.addEventListener("click", function(){
+      editorRefImages = editorRefImages.filter(function(im){ return im.id !== b.dataset.rmimg; });
+      renderRefImageRow();
+    });
+  });
+}
+document.getElementById("refImageInput").addEventListener("change", function(e){
+  var files = Array.from(e.target.files || []);
+  e.target.value = "";
+  var remaining = 4 - editorRefImages.length;
+  if(remaining <= 0){ toast("参考画像は最大4枚までです"); return; }
+  if(files.length > remaining){ toast("参考画像は最大4枚までです"); }
+  files.slice(0, remaining).forEach(function(file){
+    fileToCompressedDataUrl(file, 640, 0.72).then(function(dataUrl){
+      editorRefImages.push({id: uid(), dataUrl: dataUrl});
+      renderRefImageRow();
+    }).catch(function(){ toast("画像の読み込みに失敗しました"); });
+  });
+});
 function openEditor(id){
   editingId = id || null;
   var t = id ? templates.find(function(x){ return x.id === id; }) : null;
@@ -690,6 +842,9 @@ function openEditor(id){
   variableRowsEl.innerHTML = "";
   var vars = t && t.variables && t.variables.length ? t.variables : [{key:"price",label:"価格",type:"number",options:[],unit:"円",def:""}];
   vars.forEach(function(v){ variableRowsEl.appendChild(newVariableRow(v)); });
+  editorRefImages = (t && Array.isArray(t.refImages)) ? t.refImages.slice() : [];
+  renderRefImageRow();
+  updateEditorCharCounts();
   document.getElementById("templateListView").hidden = true;
   document.getElementById("templateEditView").hidden = false;
 }
@@ -698,6 +853,18 @@ function closeEditor(){
   document.getElementById("templateListView").hidden = false;
   editingId = null;
 }
+function updateEditorCharCounts(){
+  var vars = collectVariables();
+  var defaults = {};
+  vars.forEach(function(v){ defaults[v.key] = v.def; });
+  var titleRaw = document.getElementById("f_title").value;
+  var descRaw = document.getElementById("f_desc").value;
+  var titleEst = renderTemplateString(titleRaw, vars, defaults);
+  var descEst = renderTemplateString(descRaw, vars, defaults);
+  setCharCount("titleCharCount", charLen(titleEst), 40);
+  setCharCount("descCharCount", charLen(descEst), 1000);
+}
+document.getElementById("templateForm").addEventListener("input", updateEditorCharCounts);
 document.getElementById("btnNewTemplate").addEventListener("click", function(){ openEditor(null); });
 document.getElementById("btnBackToList").addEventListener("click", closeEditor);
 document.getElementById("btnCancelTemplate").addEventListener("click", closeEditor);
@@ -725,7 +892,8 @@ document.getElementById("templateForm").addEventListener("submit", function(e){
     shippingDays: daysSel.value,
     titleTemplate: document.getElementById("f_title").value,
     descriptionTemplate: document.getElementById("f_desc").value,
-    variables: collectVariables()
+    variables: collectVariables(),
+    refImages: editorRefImages.slice()
   };
   upsertTemplate(tpl);
   closeEditor();
@@ -747,6 +915,7 @@ function refreshTemplateDependents(){
   if(!currentTemplateId && templates[0]){ currentTemplateId = templates[0].id; }
   renderSelectGrid();
   renderDescribePanel();
+  renderImagesTplHint();
 }
 function renderSelectGrid(){
   var grid = document.getElementById("selectGrid");
@@ -762,6 +931,7 @@ function renderSelectGrid(){
     var vlist = (t.variables||[]).map(function(v){ return escapeHtml(v.label||v.key); }).join(" ・ ") || "なし";
     var selected = t.id === currentTemplateId;
     return '<div class="template-card tpl-select-card'+(selected?" selected":"")+'" data-select="'+t.id+'" role="button" tabindex="0">'
+      + (t.refImages && t.refImages[0] ? '<img class="tpl-thumb" src="'+t.refImages[0].dataUrl+'" alt="">' : '')
       + '<div><h3>'+escapeHtml(t.name)+'</h3>'
       + '<div class="tpl-meta">'
       + (t.isSample? '<span class="chip sample">サンプル</span>' : '')
@@ -784,6 +954,7 @@ function selectTemplate(id){
   currentTemplateId = id;
   renderSelectGrid();
   renderDescribePanel();
+  renderImagesTplHint();
 }
 function renderDescribePanel(){
   var summaryEl = document.getElementById("selectedTplSummary");
@@ -846,11 +1017,17 @@ function renderOutputs(){
   var outTitle = document.getElementById("outTitle");
   var outDesc = document.getElementById("outDesc");
   var outFixed = document.getElementById("outFixed");
-  if(!t){ outTitle.textContent=""; outDesc.textContent=""; outFixed.innerHTML=""; return; }
+  if(!t){
+    outTitle.textContent=""; outDesc.textContent=""; outFixed.innerHTML="";
+    setCharCount("titleOutCount", 0, 40); setCharCount("descOutCount", 0, 1000);
+    return;
+  }
   var values = readFormValues();
   currentFormValues = values;
   outTitle.textContent = renderTemplateString(t.titleTemplate, t.variables||[], values);
   outDesc.textContent = renderTemplateString(t.descriptionTemplate, t.variables||[], values);
+  setCharCount("titleOutCount", charLen(outTitle.textContent), 40);
+  setCharCount("descOutCount", charLen(outDesc.textContent), 1000);
   var fixedPairs = [
     ["カテゴリー", t.category||"未設定"],
     ["商品の状態", t.condition],
@@ -935,6 +1112,36 @@ function drawSquare(canvas, entry, squareSize){
   var d = computeDraw(squareSize, entry.img.naturalWidth, entry.img.naturalHeight, entry.zoom, entry.panXFrac, entry.panYFrac);
   ctx.drawImage(entry.img, d.dx, d.dy, d.dw, d.dh);
 }
+function renderEntryToDataUrl(entry, size, quality){
+  var c = document.createElement("canvas");
+  c.width = size; c.height = size;
+  var ctx = c.getContext("2d");
+  ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,size,size);
+  var d = computeDraw(size, entry.img.naturalWidth, entry.img.naturalHeight, entry.zoom, entry.panXFrac, entry.panYFrac);
+  ctx.drawImage(entry.img, d.dx, d.dy, d.dw, d.dh);
+  return c.toDataURL("image/jpeg", quality);
+}
+function saveImageAsRefImage(entry){
+  var t = currentTemplate();
+  if(!t){ toast("先に②でテンプレートを選択してください"); return; }
+  var list = Array.isArray(t.refImages) ? t.refImages.slice() : [];
+  if(list.length >= 4){ toast("参考画像は最大4枚までです（テンプレート管理で整理できます）"); return; }
+  var dataUrl;
+  try{ dataUrl = renderEntryToDataUrl(entry, 640, 0.75); }
+  catch(e){ toast("参考画像の保存に失敗しました"); return; }
+  list.push({id: uid(), dataUrl: dataUrl});
+  t.refImages = list;
+  upsertTemplate(t);
+  toast("「"+t.name+"」の参考画像に保存しました");
+}
+function renderImagesTplHint(){
+  var el = document.getElementById("imagesTplHint");
+  if(!el) return;
+  var t = currentTemplate();
+  el.textContent = t
+    ? "参考画像の保存先：" + t.name + "（②テンプレート選択で変更できます）"
+    : "参考画像を保存するには、先に②でテンプレートを選択してください";
+}
 
 var filmstripEl = document.getElementById("filmstrip");
 var imagesEmptyEl = document.getElementById("imagesEmpty");
@@ -955,10 +1162,12 @@ function renderFilmstrip(){
       '<button class="btn" type="button" data-act="up">↑</button>'
       + '<button class="btn" type="button" data-act="down">↓</button>'
       + '<button class="btn" type="button" data-act="edit">トリミング</button>'
+      + '<button class="btn" type="button" data-act="saveref">参考画像に保存</button>'
       + '<button class="btn btn-danger-ghost" type="button" data-act="del">削除</button>';
     actions.querySelector('[data-act="up"]').addEventListener("click", function(){ moveImage(entry.id,-1); });
     actions.querySelector('[data-act="down"]').addEventListener("click", function(){ moveImage(entry.id,1); });
     actions.querySelector('[data-act="edit"]').addEventListener("click", function(){ openCropEditor(entry.id); });
+    actions.querySelector('[data-act="saveref"]').addEventListener("click", function(){ saveImageAsRefImage(entry); });
     actions.querySelector('[data-act="del"]').addEventListener("click", function(){ removeImage(entry.id); });
     item.appendChild(idx); item.appendChild(canvas); item.appendChild(actions);
     filmstripEl.appendChild(item);
