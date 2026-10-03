@@ -103,6 +103,7 @@ input[type=text],input[type=number],select,textarea,input[type=file]{
   border:1px solid var(--border);background:var(--surface);color:var(--text);width:100%;
 }
 textarea{resize:vertical;font-family:var(--font-body);}
+input[type=color]{width:48px;height:38px;padding:3px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;}
 input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
 .hint{font-size:.8rem;color:var(--text-dim);margin-top:2px;}
 
@@ -174,6 +175,12 @@ h3 .char-count{font-family:var(--font-mono);font-weight:600;}
 .crop-editor-head{display:flex;justify-content:space-between;align-items:center;width:100%;}
 #cropCanvas{max-width:100%;width:320px;aspect-ratio:1/1;border-radius:10px;background:var(--surface-2);cursor:grab;touch-action:none;}
 #cropCanvas:active{cursor:grabbing;}
+#coverCanvas{max-width:100%;width:320px;aspect-ratio:1/1;border-radius:10px;background:var(--surface-2);cursor:grab;touch-action:none;}
+#coverCanvas:active{cursor:grabbing;}
+.cover-field-grid{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end;width:100%;}
+@media (max-width:480px){.cover-field-grid{grid-template-columns:1fr;}}
+.cover-size-row{display:flex;align-items:center;gap:10px;width:100%;max-width:320px;flex-wrap:wrap;}
+.cover-toggle-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
 
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:.85rem;box-shadow:var(--shadow);z-index:50;}
 
@@ -244,6 +251,39 @@ h3 .char-count{font-family:var(--font-mono);font-weight:600;}
           <input type="range" id="zoomRange" min="1" max="3" step="0.02" value="1" style="width:100%;">
         </div>
         <p class="hint">写真をドラッグすると位置を調整できます。</p>
+      </div>
+
+      <div id="coverEditor" class="crop-editor" hidden>
+        <div class="crop-editor-head"><h3 style="margin:0;">表紙画像を作成</h3><button id="btnCloseCover" class="btn btn-ghost btn-sm" type="button">完了</button></div>
+        <canvas id="coverCanvas" width="320" height="320"></canvas>
+        <p class="hint">文字をドラッグで移動、スマホはピンチ操作でサイズを変更できます（PCはスライダーまたはマウスホイール）。</p>
+
+        <div class="cover-field-grid">
+          <div class="field"><label for="cov_name">商品名</label><input type="text" id="cov_name" placeholder="例：ベアブリック 六角ベース"></div>
+          <div class="field"><label for="cov_nameColor">文字色</label><input type="color" id="cov_nameColor" value="#FFFFFF"></div>
+          <div class="field"><label for="cov_nameEffect">装飾</label>
+            <select id="cov_nameEffect"><option value="outline">縁取り</option><option value="shadow">影</option><option value="none">なし</option></select>
+          </div>
+        </div>
+        <div class="cover-field-grid">
+          <div class="field"><label for="cov_note">備考（任意）</label><input type="text" id="cov_note" placeholder="例：台座は付属しません"></div>
+          <div class="field"><label for="cov_noteColor">文字色</label><input type="color" id="cov_noteColor" value="#FFFFFF"></div>
+          <div class="field"><label for="cov_noteEffect">装飾</label>
+            <select id="cov_noteEffect"><option value="outline">縁取り</option><option value="shadow">影</option><option value="none">なし</option></select>
+          </div>
+        </div>
+
+        <div class="cover-toggle-row">
+          <span class="field-label">サイズ・位置を調整：</span>
+          <button type="button" class="btn btn-sm btn-accent" id="btnActiveName">商品名</button>
+          <button type="button" class="btn btn-sm btn-ghost" id="btnActiveNote">備考</button>
+          <button type="button" class="btn btn-sm btn-ghost" id="btnResetCoverPos">位置を初期化</button>
+        </div>
+        <div class="cover-size-row">
+          <label class="field-label" for="cov_sizeRange" style="white-space:nowrap;">文字サイズ</label>
+          <input type="range" id="cov_sizeRange" min="10" max="80" step="1" value="28" style="flex:1;">
+        </div>
+        <button type="button" class="btn btn-danger-ghost btn-sm" id="btnClearCover">この写真の表紙文字を削除</button>
       </div>
 
       <div class="card">
@@ -517,9 +557,13 @@ var history = loadLocal(LS_H, []);
 var db = null;
 var downloadsNS = null;
 var editingId = null; // template currently being edited, null = new
-var images = []; // {id, img, name, zoom, panXFrac, panYFrac}
+var images = []; // {id, img, name, zoom, panXFrac, panYFrac, cover}
 var activeCropId = null;
 var dragState = null;
+var activeCoverId = null;
+var activeTextKey = "name"; // "name" | "note"
+var coverPointers = {};
+var coverDrag = null;
 
 /* ---------- capabilities ---------- */
 (function initCapabilities(){
@@ -1110,14 +1154,77 @@ function computeDraw(squareSize, imgW, imgH, zoom, panXFrac, panYFrac){
   var dy = squareSize/2 - dh/2 + panY;
   return {dw:dw, dh:dh, dx:dx, dy:dy, panXFrac:panX/squareSize, panYFrac:panY/squareSize};
 }
+var COVER_REF_SQUARE = 320;
+function clamp01(v){ return Math.max(0, Math.min(1, v)); }
+function defaultCoverData(){
+  return {
+    name: "", note: "",
+    nameStyle: {color:"#FFFFFF", effect:"outline", size:28, x:0.5, y:0.80},
+    noteStyle: {color:"#FFFFFF", effect:"outline", size:16, x:0.5, y:0.92}
+  };
+}
+function coverFontPx(layer, squareSize){ return layer.size * (squareSize / COVER_REF_SQUARE); }
+function drawTextLayer(ctx, squareSize, text, layer){
+  if(!text) return;
+  var fontPx = coverFontPx(layer, squareSize);
+  ctx.font = "700 " + fontPx + "px 'Zen Maru Gothic','Noto Sans JP',sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  var x = layer.x * squareSize, y = layer.y * squareSize;
+  ctx.save();
+  if(layer.effect === "shadow"){
+    ctx.shadowColor = "rgba(0,0,0,.65)";
+    ctx.shadowBlur = Math.max(3, fontPx*0.18);
+    ctx.shadowOffsetX = fontPx*0.05;
+    ctx.shadowOffsetY = fontPx*0.08;
+  }
+  if(layer.effect === "outline"){
+    ctx.lineWidth = Math.max(2, fontPx*0.12);
+    ctx.strokeStyle = "#000000";
+    ctx.lineJoin = "round";
+    ctx.miterLimit = 2;
+    ctx.strokeText(text, x, y);
+  }
+  ctx.fillStyle = layer.color || "#FFFFFF";
+  ctx.fillText(text, x, y);
+  ctx.restore();
+}
+function drawCoverText(ctx, squareSize, cover){
+  if(!cover) return;
+  if(cover.name) drawTextLayer(ctx, squareSize, cover.name, cover.nameStyle);
+  if(cover.note) drawTextLayer(ctx, squareSize, cover.note, cover.noteStyle);
+}
+function measureTextLayer(ctx, squareSize, text, layer){
+  var fontPx = coverFontPx(layer, squareSize);
+  ctx.font = "700 " + fontPx + "px 'Zen Maru Gothic','Noto Sans JP',sans-serif";
+  var w = ctx.measureText(text).width;
+  var h = fontPx * 1.2;
+  var cx = layer.x*squareSize, cy = layer.y*squareSize;
+  return {x:cx-w/2, y:cy-h/2, w:w, h:h};
+}
+function drawCoverHighlight(ctx, squareSize, cover, activeKey){
+  if(!cover || !activeKey) return;
+  var text = activeKey === "name" ? cover.name : cover.note;
+  var layer = activeKey === "name" ? cover.nameStyle : cover.noteStyle;
+  if(!text) return;
+  var box = measureTextLayer(ctx, squareSize, text, layer);
+  ctx.save();
+  ctx.setLineDash([6,4]);
+  ctx.strokeStyle = "#1E6E76";
+  ctx.lineWidth = 1.5;
+  ctx.strokeRect(box.x-6, box.y-6, box.w+12, box.h+12);
+  ctx.restore();
+}
 function drawSquare(canvas, entry, squareSize){
   canvas.width = squareSize; canvas.height = squareSize;
   var ctx = canvas.getContext("2d");
   ctx.fillStyle = getComputedStyle(document.body).getPropertyValue("--surface-2") || "#eee";
   ctx.fillRect(0,0,squareSize,squareSize);
-  if(!entry.img) return;
-  var d = computeDraw(squareSize, entry.img.naturalWidth, entry.img.naturalHeight, entry.zoom, entry.panXFrac, entry.panYFrac);
-  ctx.drawImage(entry.img, d.dx, d.dy, d.dw, d.dh);
+  if(entry.img){
+    var d = computeDraw(squareSize, entry.img.naturalWidth, entry.img.naturalHeight, entry.zoom, entry.panXFrac, entry.panYFrac);
+    ctx.drawImage(entry.img, d.dx, d.dy, d.dw, d.dh);
+  }
+  drawCoverText(ctx, squareSize, entry.cover);
 }
 function renderEntryToDataUrl(entry, size, quality){
   var c = document.createElement("canvas");
@@ -1126,6 +1233,7 @@ function renderEntryToDataUrl(entry, size, quality){
   ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,size,size);
   var d = computeDraw(size, entry.img.naturalWidth, entry.img.naturalHeight, entry.zoom, entry.panXFrac, entry.panYFrac);
   ctx.drawImage(entry.img, d.dx, d.dy, d.dw, d.dh);
+  drawCoverText(ctx, size, entry.cover);
   return c.toDataURL("image/jpeg", quality);
 }
 function saveImageAsRefImage(entry){
@@ -1169,11 +1277,13 @@ function renderFilmstrip(){
       '<button class="btn" type="button" data-act="up">↑</button>'
       + '<button class="btn" type="button" data-act="down">↓</button>'
       + '<button class="btn" type="button" data-act="edit">トリミング</button>'
+      + '<button class="btn" type="button" data-act="cover">表紙を作成</button>'
       + '<button class="btn" type="button" data-act="saveref">参考画像に保存</button>'
       + '<button class="btn btn-danger-ghost" type="button" data-act="del">削除</button>';
     actions.querySelector('[data-act="up"]').addEventListener("click", function(){ moveImage(entry.id,-1); });
     actions.querySelector('[data-act="down"]').addEventListener("click", function(){ moveImage(entry.id,1); });
     actions.querySelector('[data-act="edit"]').addEventListener("click", function(){ openCropEditor(entry.id); });
+    actions.querySelector('[data-act="cover"]').addEventListener("click", function(){ openCoverEditor(entry.id); });
     actions.querySelector('[data-act="saveref"]').addEventListener("click", function(){ saveImageAsRefImage(entry); });
     actions.querySelector('[data-act="del"]').addEventListener("click", function(){ removeImage(entry.id); });
     item.appendChild(idx); item.appendChild(canvas); item.appendChild(actions);
@@ -1261,6 +1371,161 @@ function endDrag(){ dragState = null; }
 cropCanvas.addEventListener("pointerup", endDrag);
 cropCanvas.addEventListener("pointercancel", endDrag);
 
+/* ---------- cover editor (表紙画像の作成) ---------- */
+var coverEditorEl = document.getElementById("coverEditor");
+var coverCanvas = document.getElementById("coverCanvas");
+var cov_name = document.getElementById("cov_name");
+var cov_note = document.getElementById("cov_note");
+var cov_nameColor = document.getElementById("cov_nameColor");
+var cov_noteColor = document.getElementById("cov_noteColor");
+var cov_nameEffect = document.getElementById("cov_nameEffect");
+var cov_noteEffect = document.getElementById("cov_noteEffect");
+var cov_sizeRange = document.getElementById("cov_sizeRange");
+var btnActiveName = document.getElementById("btnActiveName");
+var btnActiveNote = document.getElementById("btnActiveNote");
+
+function activeCoverEntry(){
+  return images.find(function(e){ return e.id === activeCoverId; }) || null;
+}
+function activeCoverLayer(){
+  var entry = activeCoverEntry();
+  if(!entry || !entry.cover) return null;
+  return activeTextKey === "name" ? entry.cover.nameStyle : entry.cover.noteStyle;
+}
+function renderCoverCanvas(){
+  var entry = activeCoverEntry();
+  if(!entry) return;
+  drawSquare(coverCanvas, entry, COVER_REF_SQUARE);
+  var ctx = coverCanvas.getContext("2d");
+  drawCoverHighlight(ctx, COVER_REF_SQUARE, entry.cover, activeTextKey);
+}
+function syncCoverSizeRange(){
+  var layer = activeCoverLayer();
+  if(layer) cov_sizeRange.value = layer.size;
+}
+function updateActiveButtons(){
+  btnActiveName.classList.toggle("btn-accent", activeTextKey === "name");
+  btnActiveName.classList.toggle("btn-ghost", activeTextKey !== "name");
+  btnActiveNote.classList.toggle("btn-accent", activeTextKey === "note");
+  btnActiveNote.classList.toggle("btn-ghost", activeTextKey !== "note");
+}
+function openCoverEditor(id){
+  activeCoverId = id;
+  var entry = activeCoverEntry();
+  if(!entry) return;
+  if(!entry.cover){ entry.cover = defaultCoverData(); }
+  activeTextKey = "name";
+  cov_name.value = entry.cover.name;
+  cov_note.value = entry.cover.note;
+  cov_nameColor.value = entry.cover.nameStyle.color;
+  cov_nameEffect.value = entry.cover.nameStyle.effect;
+  cov_noteColor.value = entry.cover.noteStyle.color;
+  cov_noteEffect.value = entry.cover.noteStyle.effect;
+  updateActiveButtons();
+  syncCoverSizeRange();
+  coverEditorEl.hidden = false;
+  renderCoverCanvas();
+  coverEditorEl.scrollIntoView({block:"nearest", behavior:"smooth"});
+}
+function closeCoverEditor(){
+  activeCoverId = null;
+  coverEditorEl.hidden = true;
+  renderFilmstrip();
+}
+document.getElementById("btnCloseCover").addEventListener("click", closeCoverEditor);
+document.getElementById("btnClearCover").addEventListener("click", function(){
+  var entry = activeCoverEntry();
+  if(!entry) return;
+  entry.cover = null;
+  closeCoverEditor();
+  toast("表紙文字を削除しました");
+});
+document.getElementById("btnResetCoverPos").addEventListener("click", function(){
+  var entry = activeCoverEntry();
+  if(!entry || !entry.cover) return;
+  var def = defaultCoverData();
+  entry.cover.nameStyle.x = def.nameStyle.x; entry.cover.nameStyle.y = def.nameStyle.y;
+  entry.cover.noteStyle.x = def.noteStyle.x; entry.cover.noteStyle.y = def.noteStyle.y;
+  renderCoverCanvas();
+});
+cov_name.addEventListener("input", function(){ var entry = activeCoverEntry(); if(!entry) return; entry.cover.name = cov_name.value; renderCoverCanvas(); });
+cov_note.addEventListener("input", function(){ var entry = activeCoverEntry(); if(!entry) return; entry.cover.note = cov_note.value; renderCoverCanvas(); });
+cov_nameColor.addEventListener("input", function(){ var entry = activeCoverEntry(); if(!entry) return; entry.cover.nameStyle.color = cov_nameColor.value; renderCoverCanvas(); });
+cov_noteColor.addEventListener("input", function(){ var entry = activeCoverEntry(); if(!entry) return; entry.cover.noteStyle.color = cov_noteColor.value; renderCoverCanvas(); });
+cov_nameEffect.addEventListener("change", function(){ var entry = activeCoverEntry(); if(!entry) return; entry.cover.nameStyle.effect = cov_nameEffect.value; renderCoverCanvas(); });
+cov_noteEffect.addEventListener("change", function(){ var entry = activeCoverEntry(); if(!entry) return; entry.cover.noteStyle.effect = cov_noteEffect.value; renderCoverCanvas(); });
+cov_sizeRange.addEventListener("input", function(){
+  var layer = activeCoverLayer();
+  if(!layer) return;
+  layer.size = parseInt(cov_sizeRange.value, 10);
+  renderCoverCanvas();
+});
+btnActiveName.addEventListener("click", function(){ activeTextKey = "name"; updateActiveButtons(); syncCoverSizeRange(); renderCoverCanvas(); });
+btnActiveNote.addEventListener("click", function(){ activeTextKey = "note"; updateActiveButtons(); syncCoverSizeRange(); renderCoverCanvas(); });
+
+function coverCanvasPoint(e){
+  var rect = coverCanvas.getBoundingClientRect();
+  var scaleX = coverCanvas.width / rect.width;
+  var scaleY = coverCanvas.height / rect.height;
+  return {x:(e.clientX-rect.left)*scaleX, y:(e.clientY-rect.top)*scaleY};
+}
+coverCanvas.addEventListener("pointerdown", function(e){
+  var layer = activeCoverLayer();
+  if(!layer) return;
+  coverCanvas.setPointerCapture(e.pointerId);
+  coverPointers[e.pointerId] = coverCanvasPoint(e);
+  var ids = Object.keys(coverPointers);
+  if(ids.length === 1){
+    coverDrag = {type:"drag", startPt: coverPointers[e.pointerId], startX: layer.x, startY: layer.y};
+  } else if(ids.length === 2){
+    var pts = ids.map(function(id){ return coverPointers[id]; });
+    var dist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
+    coverDrag = {type:"pinch", startDist: Math.max(1,dist), startSize: layer.size};
+  }
+});
+coverCanvas.addEventListener("pointermove", function(e){
+  if(!(e.pointerId in coverPointers)) return;
+  coverPointers[e.pointerId] = coverCanvasPoint(e);
+  var layer = activeCoverLayer();
+  if(!layer || !coverDrag) return;
+  var ids = Object.keys(coverPointers);
+  if(coverDrag.type === "drag" && ids.length === 1){
+    var pt = coverPointers[e.pointerId];
+    var dx = pt.x - coverDrag.startPt.x;
+    var dy = pt.y - coverDrag.startPt.y;
+    layer.x = clamp01(coverDrag.startX + dx/coverCanvas.width);
+    layer.y = clamp01(coverDrag.startY + dy/coverCanvas.height);
+    renderCoverCanvas();
+  } else if(coverDrag.type === "pinch" && ids.length === 2){
+    var pts = ids.map(function(id){ return coverPointers[id]; });
+    var dist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y);
+    var scale = dist / coverDrag.startDist;
+    layer.size = Math.max(10, Math.min(80, Math.round(coverDrag.startSize * scale)));
+    syncCoverSizeRange();
+    renderCoverCanvas();
+  }
+});
+function endCoverPointer(e){
+  delete coverPointers[e.pointerId];
+  var ids = Object.keys(coverPointers);
+  var layer = activeCoverLayer();
+  if(ids.length === 1 && layer){
+    coverDrag = {type:"drag", startPt: coverPointers[ids[0]], startX: layer.x, startY: layer.y};
+  } else {
+    coverDrag = null;
+  }
+}
+coverCanvas.addEventListener("pointerup", endCoverPointer);
+coverCanvas.addEventListener("pointercancel", endCoverPointer);
+coverCanvas.addEventListener("wheel", function(e){
+  var layer = activeCoverLayer();
+  if(!layer) return;
+  e.preventDefault();
+  layer.size = Math.max(10, Math.min(80, layer.size + (e.deltaY < 0 ? 1 : -1)));
+  syncCoverSizeRange();
+  renderCoverCanvas();
+}, {passive:false});
+
 /* ---------- export ---------- */
 function downloadFileViaAnchor(blob, filename){
   var url = URL.createObjectURL(blob);
@@ -1334,6 +1599,7 @@ function exportImages(){
       if(format !== "png"){ ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0,0,size,size); }
       var d = computeDraw(size, entry.img.naturalWidth, entry.img.naturalHeight, entry.zoom, entry.panXFrac, entry.panYFrac);
       ctx.drawImage(entry.img, d.dx, d.dy, d.dw, d.dh);
+      drawCoverText(ctx, size, entry.cover);
       c.toBlob(function(blob){
         var name = prefix + "_" + String(i+1).padStart(2,"0") + "." + ext;
         resolve({name:name, blob:blob});
